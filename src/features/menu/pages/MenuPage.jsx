@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useFetch } from "../hooks/useFetch";
 import MenuList from "../components/MenuList";
+import { menuUrl } from "../api";
 
 function MenuPage() {
     const [query, setQuery] = useState("");
@@ -12,7 +13,7 @@ function MenuPage() {
         data: dishes,
         isLoading,
         error,
-    } = useFetch("/menu.json");
+    } = useFetch(menuUrl);
 
     if (isLoading) {
         return <p>Loading menu...</p>;

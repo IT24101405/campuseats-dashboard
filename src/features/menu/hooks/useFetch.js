@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 
 export function useFetch(url) {
-    const [data, setData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [result, setResult] = useState(null);
 
     useEffect(() => {
         let active = true;
 
-        setIsLoading(true);
+        const controller = new AbortController();
 
-        fetch(url)
+        fetch(url, { signal: controller.signal })
             .then((res) => {
                 if (!res.ok) {
                     throw new Error("HTTP " + res.status);
@@ -20,24 +18,22 @@ export function useFetch(url) {
             })
             .then((json) => {
                 if (active) {
-                    setData(json);
+                    setResult({ url, data: json, error: null });
                 }
             })
             .catch((err) => {
                 if (active) {
-                    setError(err.message);
-                }
-            })
-            .finally(() => {
-                if (active) {
-                    setIsLoading(false);
+                    setResult({ url, data: null, error: err.message });
                 }
             });
 
         return () => {
             active = false;
+            controller.abort();
         };
     }, [url]);
 
-    return { data, isLoading, error };
+    return result?.url === url
+        ? { data: result.data, isLoading: false, error: result.error }
+        : { data: null, isLoading: true, error: null };
 }
